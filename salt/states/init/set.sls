@@ -1,4 +1,4 @@
-sethosts:
+set-hosts:
   file.managed:
     - source: salt://init/file/hosts
     - name: /etc/hosts
@@ -6,7 +6,7 @@ sethosts:
     - group: root
     - mode: 644
 
-setresolv:
+set-resolv:
   file.managed:
     - source: salt://init/file/resolv.conf
     - name: /etc/resolv.conf
@@ -14,9 +14,9 @@ setresolv:
     - group: root
     - mode: 644
   
-setfirewall:
+set-firewall:
   cmd.run:
-    - name: setenforce 0 && sed -i  "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config && systemctl stop firewalld.service && iptables --flush && systemctl disable firewalld.service
+    - name: setenforce 0 && sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && systemctl stop firewalld.service && iptables --flush && systemctl disable firewalld.service
   pkg.installed:
     - names:
       - iptables-services  
@@ -27,11 +27,15 @@ setfirewall:
     - group: root
     - mode: 644
     - require:
-      - pkg: setfirewall
+      - pkg: set-firewall
  
-installminion:
-  cmd.run:
-    - name: yum -y install epel* && yum -y install salt-minion  && yum -y remove net-tools && yum -y install net-tools
+install-minion:
+  pkg.installed:
+    - names:
+      - epel-release
+      - salt-minion
+      - net-tools
+      - vim
   file.managed:
     - source: salt://init/file/minion
     - name: /etc/salt/minion
@@ -39,7 +43,7 @@ installminion:
     - group: root
     - mode: 644
     - require: 
-      - cmd: installminion
+      - pkg: install-minion
 
 hostname-set:
   file.managed:
@@ -54,15 +58,13 @@ hostname-set:
       - file: hostname-set
 
 minion-running:
- service.running:
+  service.running:
     - name: salt-minion
     - enable: True
     - require: 
-      - file: installminion
+      - file: install-minion
 
-changepasswd:
+change-passwd:
   cmd.run:
     - name: "echo '123456' | passwd --stdin root && touch /tmp/changepasswd.lock"
     - unless: test -f /tmp/changepasswd.lock
- 
- 
