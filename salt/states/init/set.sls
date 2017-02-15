@@ -35,7 +35,7 @@ install-minion:
       - epel-release
       - salt-minion
       - net-tools
-      - vim
+      - vim-enhanced
   file.managed:
     - source: salt://init/file/minion
     - name: /etc/salt/minion
