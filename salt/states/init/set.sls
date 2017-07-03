@@ -29,6 +29,14 @@ set-firewall:
     - require:
       - pkg: set-firewall
  
+install-ntp:
+  pkg.installed:
+    - names:
+      - ntp
+  service.running:
+    - name: ntpd
+    - enable: True
+
 install-minion:
   pkg.installed:
     - names:
@@ -52,6 +60,9 @@ hostname-set:
     - user: root
     - group: root
     - mode: 755
+    - template: jinja
+    - default:
+      NETWORK: enp3s0f0 
   cmd.run:
     - name: bash /tmp/hostnameset.sh
     - require:
@@ -66,5 +77,5 @@ minion-running:
 
 change-passwd:
   cmd.run:
-    - name: "echo '123456' | passwd --stdin root && touch /tmp/changepasswd.lock"
+    - name: "echo 'JPHRcjy@1233' | passwd --stdin root && touch /tmp/changepasswd.lock"
     - unless: test -f /tmp/changepasswd.lock
